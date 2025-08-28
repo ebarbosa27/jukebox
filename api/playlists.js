@@ -40,22 +40,28 @@ router
     res.send(tracks);
   })
   .post(requireBody(["trackId"]), async (req, res) => {
-    const playlistId = req.params.id;
     const trackId = req.body.trackId;
+    const playlistId = req.params.id;
+
+    // Test track and playlist id to make sure they are numbers
+    if (isNaN(trackId)) return res.status(400).send("trackId is not a number!");
+    if (isNaN(playlistId)) return res.status(400).send("playlistId is not a number!");
 
     const track = await getTrackById(trackId);
-    if (isNaN(trackId)) return res.status(400).send("trackId is not a number!");
     if (!track) return res.status(400).send("Track not found!");
 
     const playlist = await getPlaylistById(playlistId);
-    if (isNaN(playlistId)) return res.status(400).send("playlistId is not a number!");
     if (!playlist) return res.status(404).send("Playlist not found!");
 
-    const playlist_track = await createPlaylistTrack({
-      playlist_id: playlistId,
-      track_id: trackId,
-    });
-    if (!playlist_track) return res.status(404).send("Playlist not found :(");
-
-    res.status(201).send(playlist_track);
+    try {
+      const playlist_track = await createPlaylistTrack({
+        playlist_id: playlistId,
+        track_id: trackId,
+      });
+      if (!playlist_track) return res.status(404).send("Playlist not found :(");
+      res.status(201).send(playlist_track);
+    } catch (err) {
+      if (err.code === "23505") return res.status(400).send("Track already in playlist");
+      res.status(500).send("Error occured :(");
+    }
   });
