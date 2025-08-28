@@ -21,6 +21,7 @@ CREATE TABLE playlists_tracks(
   track_id INT NOT NULL,
 
   FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
-  FOREIGN KEY (track_id) REFERENCES tracks(id) ON DELETE CASCADE
+  FOREIGN KEY (track_id) REFERENCES tracks(id) ON DELETE CASCADE,
+  UNIQUE (playlist_id, track_id)
 );
 
